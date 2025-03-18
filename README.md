@@ -6,12 +6,15 @@ This repository contains scripts for evaluating language models on a medical QA 
 
 ```
 📦 project_root
+ ┣ 📂 config
+ ┃ ┣ 📜 system_prompt.txt   # System prompt file
+ ┃ ┗ 📜 hyperparams.json    # Sampling settings
  ┣ 📂 data
- ┃ ┗ 📜 qa.csv                 # Ground truth QA dataset
- ┣ 📜 evaluate_model.py        # Generates answers using a specified model
- ┣ 📜 run_eval.py              # Evaluates the generated answers
- ┣ 📜 README.md                # Documentation
- ┗ 📜 requirements.txt         # Dependencies
+ ┃ ┗ 📜 qa.csv             # Ground truth QA dataset
+ ┣ 📜 evaluate_model.py    # Generates answers using a model
+ ┣ 📜 run_eval.py          # Evaluates the generated answers
+ ┣ 📜 README.md            # Documentation
+ ┗ 📜 requirements.txt     # Dependencies
 ```
 
 ---
@@ -20,8 +23,8 @@ This repository contains scripts for evaluating language models on a medical QA 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/aidotse/nextgen-nlu.git
-   cd nextgen-nlu
+   git clone https://github.com/your_repo/eval_pipeline.git
+   cd eval_pipeline
    ```
 
 2. **Install dependencies**
@@ -53,24 +56,23 @@ The dataset is stored in `data/qa.csv` and should be formatted as follows:
 ### **1️⃣ Generate Model Answers**
 Run `evaluate_model.py` to generate answers from a specified model.
 ```bash
-python evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --output my_model_answers.csv
+python evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt
 ```
-🔹 **Arguments**
+🔹 **Arguments**  
 - `--model` → Hugging Face model to use for inference (e.g., `meta-llama/Llama-3.1-8B-Instruct`)
-- `--output` → CSV file to save generated answers (default: `model_answers.csv`)
 
 ---
 
 ### **2️⃣ Evaluate the Model**
 Run `run_eval.py` to assess model performance using **cosine similarity** and **GPT-4o scoring**.
 ```bash
-python run_eval.py --answer my_model_answers.csv --eval_model gpt-4o
+python run_eval.py --answer model_answers.csv --eval_model gpt-4o
 ```
-🔹 **Arguments**
-- `--answer` → CSV file containing model-generated answers
-- `--eval_model` → OpenAI model for evaluation (default: `gpt-4o`)
+🔹 **Arguments**  
+- `--answer` → CSV file containing model-generated answers  
+- `--eval_model` → OpenAI model for evaluation (default: `gpt-4o`)  
 
-📌 **Output:**
+📌 **Output:**  
 A CSV file `evaluation_results_MODEL_TIMESTAMP.csv` containing:
 - Cosine similarity score
 - LLM evaluation score (1-10)
@@ -100,8 +102,6 @@ Average LLM Score: 8.2
 Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-00.csv
 ```
 
-## 📝 License
-MIT License
-
-## 👨‍💻 Author
-[Tim Isbister] | [tim.isbister@ai.se]
+## 👨‍💻 Authors
+[Tim Isbister]  | [tim.isbister@ai.se]
+[Amaru Cuba Gyllensten] | [amaru.gyllensten@ai.se]
