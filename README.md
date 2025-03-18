@@ -1,1 +1,107 @@
-# nextgen-nlu
+# Model Evaluation Pipeline
+
+This repository contains scripts for evaluating language models on a medical QA dataset. The evaluation is performed using **cosine similarity (embeddings)** and an **LLM-based grading system (GPT-4o).** 
+
+## 📂 Project Structure
+
+```
+📦 project_root
+ ┣ 📂 data
+ ┃ ┗ 📜 qa.csv                 # Ground truth QA dataset
+ ┣ 📜 evaluate_model.py        # Generates answers using a specified model
+ ┣ 📜 run_eval.py              # Evaluates the generated answers
+ ┣ 📜 README.md                # Documentation
+ ┗ 📜 requirements.txt         # Dependencies
+```
+
+---
+
+## 🛠 Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/aidotse/nextgen-nlu.git
+   cd nextgen-nlu
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up your OpenAI API Key**
+   Add your OpenAI API key inside `run_eval.py`:
+   ```python
+   openai.api_key = "YOUR_OPENAI_API_KEY"
+   ```
+
+---
+
+## 📌 Dataset Format
+
+The dataset is stored in `data/qa.csv` and should be formatted as follows:
+
+| question | answer |
+|----------|--------|
+| What are the side effects of XYZ? | headache, nausea, dizziness |
+| How to use ABC medicine? | Take one tablet daily with water. |
+
+---
+
+## 🚀 Running the Pipeline
+
+### **1️⃣ Generate Model Answers**
+Run `evaluate_model.py` to generate answers from a specified model.
+```bash
+python evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --output my_model_answers.csv
+```
+🔹 **Arguments**
+- `--model` → Hugging Face model to use for inference (e.g., `meta-llama/Llama-3.1-8B-Instruct`)
+- `--output` → CSV file to save generated answers (default: `model_answers.csv`)
+
+---
+
+### **2️⃣ Evaluate the Model**
+Run `run_eval.py` to assess model performance using **cosine similarity** and **GPT-4o scoring**.
+```bash
+python run_eval.py --answer my_model_answers.csv --eval_model gpt-4o
+```
+🔹 **Arguments**
+- `--answer` → CSV file containing model-generated answers
+- `--eval_model` → OpenAI model for evaluation (default: `gpt-4o`)
+
+📌 **Output:**
+A CSV file `evaluation_results_MODEL_TIMESTAMP.csv` containing:
+- Cosine similarity score
+- LLM evaluation score (1-10)
+- Explanation for the LLM score
+
+---
+
+## 📊 Evaluation Metrics
+
+| Metric | Description |
+|--------|------------|
+| **Cosine Similarity** | Measures the semantic similarity between the ground truth and the model's answer using embeddings. |
+| **LLM Score (1-10)** | GPT-4o evaluates the correctness and completeness of the model's answer. |
+| **Explanation** | The LLM provides reasoning for the given score. |
+
+---
+
+## 📌 Example Output
+
+```
+### EVALUATION SUMMARY ###
+Model Evaluated: my_model_answers
+Timestamp: 2025-03-18_14-30-00
+Average Cosine Similarity: 0.78
+Average LLM Score: 8.2
+
+Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-00.csv
+```
+
+## 📝 License
+MIT License
+
+## 👨‍💻 Author
+[Tim Isbister] | [tim.isbister@ai.se]
