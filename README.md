@@ -1,30 +1,13 @@
 # Model Evaluation Pipeline
 
-This repository contains scripts for evaluating language models on a medical QA dataset. The evaluation is performed using **cosine similarity (embeddings)** and an **LLM-based grading system (GPT-4o).** 
-
-## 📂 Project Structure
-
-```
-📦 project_root
- ┣ 📂 config
- ┃ ┣ 📜 system_prompt.txt   # System prompt file
- ┃ ┗ 📜 hyperparams.json    # Sampling settings
- ┣ 📂 data
- ┃ ┗ 📜 qa.csv             # Ground truth QA dataset
- ┣ 📜 evaluate_model.py    # Generates answers using a model
- ┣ 📜 run_eval.py          # Evaluates the generated answers
- ┣ 📜 README.md            # Documentation
- ┗ 📜 requirements.txt     # Dependencies
-```
-
----
+This repository contains scripts for training & evaluating language models on a medical QA dataset. The evaluation is performed using **cosine similarity (embeddings)** and an **LLM-based grading system (GPT-4o).** 
 
 ## 🛠 Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your_repo/eval_pipeline.git
-   cd eval_pipeline
+   git clone https://github.com/your_repo/nextgen-nlu.git
+   cd nextgen-nlu
    ```
 
 2. **Install dependencies**
@@ -104,4 +87,5 @@ Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-0
 
 ## 👨‍💻 Authors
 [Tim Isbister]  | [tim.isbister@ai.se]
+
 [Amaru Cuba Gyllensten] | [amaru.gyllensten@ai.se]
