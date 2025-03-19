@@ -34,7 +34,7 @@ The dataset is stored in `data/qa.csv` and should be formatted as follows:
 
 ---
 
-## 🚀 Running the Pipeline
+## 🚀 Running the Evaluation Pipeline
 
 ### **1️⃣ Generate Model Answers**
 Run `evaluate_model.py` to generate answers from a specified model.
@@ -84,7 +84,18 @@ Average LLM Score: 8.2
 
 Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-00.csv
 ```
-
+## 🛠️ Finetuning a model
+```bash
+python lora_finetuning.py
+```
+Select a dataset, e.g:
+```python
+dataset = load_dataset(
+    "text",
+    data_files={"train": "/data/nextgen/data/*.txt"},
+    sample_by="document"
+)
+```
 ## 👨‍💻 Authors
 [Tim Isbister]  | [tim.isbister@ai.se]
 
