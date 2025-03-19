@@ -1,4 +1,4 @@
-# Model Evaluation Pipeline
+# Model Training & Evaluation for Hackathon
 
 This repository contains scripts for training & evaluating language models on a medical QA dataset. The evaluation is performed using **cosine similarity (embeddings)** and an **LLM-based grading system (GPT-4o).** 
 
