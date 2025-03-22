@@ -9,9 +9,10 @@ tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
 tokenizer.pad_token = tokenizer.eos_token
 
 lora_config = LoraConfig(
-    r=8,
-    lora_alpha=32,
+    r=32,
+    lora_alpha=16,
     target_modules=["q_proj", "v_proj"],
+    #target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     lora_dropout=0.1,
     bias="none",
     task_type="CAUSAL_LM"
@@ -20,8 +21,10 @@ model = get_peft_model(model, lora_config)
 
 dataset = load_dataset(
     "text",
-    data_files={"train": "/data/nextgen/data/*.txt"},
-    sample_by="document"
+    data_files="/data/nextgen/data/*.txt",
+    num_proc=24
+    #data_files={"train": "/data/nextgen/data/*.txt"},
+    #sample_by="document"
 )
 
 
@@ -34,16 +37,16 @@ def tokenize_function(examples):
     )
 
 
-tokenized_datasets = dataset.map(tokenize_function, batched=True)
+tokenized_datasets = dataset.map(tokenize_function, batched=True, num_proc=24)
 data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 training_args = TrainingArguments(
     output_dir=f"./{model_name_or_path}_finetuned_lora",
-    per_device_train_batch_size=1,
-    gradient_accumulation_steps=8,
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=4,
     num_train_epochs=3,
     learning_rate=2e-4,
-    warmup_steps=100,
+    #warmup_steps=100,
     lr_scheduler_type="cosine",
     fp16=True,
     logging_steps=1,
