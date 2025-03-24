@@ -6,9 +6,9 @@ The dataset is made up of domain specific questions with grund truth answers.
 See data/qa.csv.
 
 ## Models to use
-1) *meta-llama/Llama-3.1-8B-Instruct* running @ 185.248.53.82:35711
-2) *llama-finetuned-raw* running @ 185.248.53.82:36539
-3) *llama-finetuned-raw-qa* running @ 185.248.53.82:43773
+1) `meta-llama/Llama-3.1-8B-Instruct` running @ `185.248.53.82:35711`
+2) `llama-finetuned-raw` running @ `185.248.53.82:36539`
+3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773`
 
 ## Possible Approaches
 * Use models as they are and compare results (tweak prompt, hyperparams) example: 
