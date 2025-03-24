@@ -9,27 +9,35 @@ from openai import OpenAI
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 
-client = OpenAI(api_key="EMPTY", base_url="http://185.248.53.82:35711/v1")
+# Initialize the local client for generation (vLLM-based).
+client = OpenAI(api_key="YOUR_LOCAL_API_KEY", base_url="http://185.248.53.82:35711/v1")
+
+# Initialize the client for embeddings using the official OpenAI API (paid service).
 client_embeddings = OpenAI(api_key="YOUR_OPENAI_API_KEY")
 
+# Initialize local embedding model.
 local_embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 def load_config(system_prompt_path):
+    # Load the system prompt.
     with open(system_prompt_path, "r", encoding="utf-8") as f:
         system_prompt = f.read().strip()
-        
+    # Load hyperparameters from config/hyperparams.json.
     with open("config/hyperparams.json", "r", encoding="utf-8") as f:
         hyperparams = json.load(f)
     return system_prompt, hyperparams
 
 def load_retrieval_data(retrieval_file):
+    # Load the retrieval database with pre-computed embeddings.
     df = pd.read_csv(retrieval_file)
+    # Parse the embedding columns from string to list of floats.
     df["openai_embedding"] = df["openai_embedding"].apply(json.loads)
     df["local_embedding"] = df["local_embedding"].apply(json.loads)
     return df
 
 def get_embedding(text, openai_model="text-embedding-3-large"):
     try:
+        # Use the official OpenAI API for embeddings.
         response = client_embeddings.embeddings.create(input=text, model=openai_model)
         embedding = np.array(response.data[0].embedding)
         return embedding, "openai"
@@ -39,11 +47,16 @@ def get_embedding(text, openai_model="text-embedding-3-large"):
         return embedding, "local"
 
 def retrieve_context(query_embedding, retrieval_df, top_k=5, method="openai"):
+    # Choose the appropriate pre-computed embeddings from the retrieval dataset.
     if method == "local":
-        embeddings = np.array(retrieval_df["local_embedding"].tolist())
+        embeddings_list = retrieval_df["local_embedding"].tolist()
     else:
-        embeddings = np.array(retrieval_df["openai_embedding"].tolist())
+        embeddings_list = retrieval_df["openai_embedding"].tolist()
+    # Use np.stack to convert list of embeddings into a homogeneous numpy array.
+    embeddings = np.stack(embeddings_list)
+    # Compute cosine similarities between the query and all retrieval embeddings.
     sims = cosine_similarity([query_embedding], embeddings)[0]
+    # Get indices for the top_k highest similarities.
     top_indices = sims.argsort()[-top_k:][::-1]
     retrieved = retrieval_df.iloc[top_indices].copy()
     retrieved["similarity"] = sims[top_indices]
@@ -51,6 +64,7 @@ def retrieve_context(query_embedding, retrieval_df, top_k=5, method="openai"):
 
 def generate_answers(model_id, qa_data, system_prompt, hyperparams, retrieval_df, top_k=5):
     generated_answers = []
+    # Map hyperparameters: "max_new_tokens" from hyperparams becomes OpenAI's "max_tokens".
     max_tokens = hyperparams.get("max_new_tokens", 1024)
     temperature = hyperparams.get("temperature", 0.7)
     top_p = hyperparams.get("top_p", 1.0)
@@ -102,6 +116,7 @@ def save_answers(output_file, answers, system_prompt_path):
 
 def main(model_id, system_prompt_path, top_k):
     system_prompt, hyperparams = load_config(system_prompt_path)
+    # Ensure a defined maximum tokens value.
     hyperparams["max_new_tokens"] = 1024
     qa_data = pd.read_csv("data/qa.csv")
     retrieval_df = load_retrieval_data("/data/nextgen/qa_pairs_with_embeddings.csv")
