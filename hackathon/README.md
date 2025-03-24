@@ -46,3 +46,13 @@ Average LLM Score: 8.2
 
 Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-00.csv
 ```
+
+# Setup
+```
+pip install -r requirements.txt
+```
+To run the `get_scores.py` with LLM as a judge. You need the openAI key.
+```python
+openai.api_key = "YOUR_OPENAI_API_KEY"
+```
+Ask Tim or Mauricio.
