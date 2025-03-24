@@ -10,7 +10,7 @@ See `data/qa.csv`.
 2) `llama-finetuned-raw` running @ `185.248.53.82:36539` (this is a lora trained model on raw pdfs)
 3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773` (another lora trained model on raw pdfs + synthethic instruct QA data)
    
-Please change the `openai_api_base` url to the endpoint where the model is running in `model_eval_api*.py`
+Please change the `openai_api_base` url to the endpoint where the model is running in `model_eval_api.py`
 
 ## Possible Approaches
 * Use models as they are and compare results (tweak prompt, hyperparams) example: 
