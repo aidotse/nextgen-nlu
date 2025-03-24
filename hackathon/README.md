@@ -6,7 +6,7 @@ The dataset is made up of domain specific questions with grund truth answers.
 See `data/qa.csv`.
 
 ## Models to test
-1) `meta-llama/Llama-3.1-8B-Instruct` running @ `185.248.53.82:35711` (this is the vanilla model from meta)
+1) `meta-llama/Meta-Llama-3.1-8B-Instruct` running @ `185.248.53.82:35711` (this is the vanilla model from meta)
 2) `llama-finetuned-raw` running @ `185.248.53.82:36539` (this is a lora trained model on raw pdfs)
 3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773` (another lora trained model on raw pdfs + synthethic instruct QA data)
    
@@ -15,11 +15,11 @@ Please change the `openai_api_base` url to the endpoint where the model is runni
 ## Possible Approaches
 * Use models as they are and compare results (tweak prompt, hyperparams) example: 
 ```bash
-python model_eval_api.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt
+python model_eval_api.py --model meta-llama/Meta-Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt
 ```
 * Use models + RAG (tweak prompt, hyperparams, retrival) example:
 ```bash 
-python model_eval_api_rag.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt --top_k 5
+python model_eval_api_rag.py --model meta-llama/Meta-Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt --top_k 5
 ```
 The RAG approach has all the embeddings precomputed from openai stored at edgelab @ `/mnt/data/rag_data/med_qa_embeddings.csv` where the embedding is computed for the `question` field.
 ```bash
