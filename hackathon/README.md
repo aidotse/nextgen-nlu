@@ -11,8 +11,15 @@ See data/qa.csv.
 3) *llama-finetuned-raw-qa* running @ 185.248.53.82:43773
 
 ## Possible Approaches
-* Use models as they are and compare results (tweak prompt, hyperparams) example: `python model_eval_api.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt`
-* Use models + RAG (tweak prompt, hyperparams, retrival) example: `python model_eval_api_rag.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt --top_k 5`
+* Use models as they are and compare results (tweak prompt, hyperparams) example: 
+```bash
+python model_eval_api.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt
+```
+* Use models + RAG (tweak prompt, hyperparams, retrival) example:
+```bash 
+python model_eval_api_rag.py --model meta-llama/Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt --top_k 5
+```
+Feel free to open up and edit `model_eval_api.py` or `model_eval_api_rag.py` to improve the performance.
 
 ## Look at metrics
 ```bash
