@@ -1,14 +1,14 @@
-# Hackathon
+# Hackathon 2025-03-24
 
-## Task
+## Challenge
 Get the highest score on the medicinal Q&A dataset from Astrazeneca.
 The dataset is made up of domain specific questions with grund truth answers.
-See data/qa.csv.
+See `data/qa.csv`.
 
-## Models to use
-1) `meta-llama/Llama-3.1-8B-Instruct` running @ `185.248.53.82:35711`
-2) `llama-finetuned-raw` running @ `185.248.53.82:36539`
-3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773`
+## Models to test
+1) `meta-llama/Llama-3.1-8B-Instruct` running @ `185.248.53.82:35711` (this is the vanilla model from meta)
+2) `llama-finetuned-raw` running @ `185.248.53.82:36539` (this is a lora trained model on raw pdfs)
+3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773` (another lora trained model on raw pdfs + synthethic instruct QA data)
    
 Please change the `openai_api_base` url to the endpoint where the model is running in `model_eval_api*.py`
 
