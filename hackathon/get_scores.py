@@ -5,25 +5,14 @@ import numpy as np
 import json
 import datetime
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+client = openai.OpenAI(api_key="....zYA")
 
-local_embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
-openai_failed = False
 
-def get_embedding(text, use_openai=True, openai_model="text-embedding-3-large"):
-    global openai_failed
-    if use_openai and not openai_failed:
-        try:
-            client = openai.OpenAI()
-            response = client.embeddings.create(input=text, model=openai_model)
-            return np.array(response.data[0].embedding), openai_model
-        except Exception:
-            print(f"⚠️ OpenAI embedding model {openai_model} failed. Switching to local embeddings.")
-            openai_failed = True
-    return np.array(local_embedding_model.encode(text)), "sentence-transformers/all-mpnet-base-v2"
+def get_embedding(text, openai_model="text-embedding-3-large"):
+    response = client.embeddings.create(input=text, model=openai_model)
+    return np.array(response.data[0].embedding), openai_model
 
 def get_llm_judge_score(question, ground_truth, model_answer, eval_model="gpt-4o"):
     prompt = f"""
@@ -44,7 +33,6 @@ You must **only return a valid JSON object** with this structure:
     "explanation": "Your reasoning"
 }}
 """
-    client = openai.OpenAI()
     response = client.chat.completions.create(
         model=eval_model,
         messages=[
