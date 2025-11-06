@@ -2,6 +2,8 @@
 
 This repository contains scripts for training & evaluating language models on a medical QA dataset. The evaluation is performed using **cosine similarity (embeddings)** and an **LLM-based grading system (GPT-4o).** 
 
+> 📖 **New to the repo?** See [QUICKSTART.md](QUICKSTART.md) for a step-by-step guide to get running quickly.
+
 ## 🛠 Setup
 
 1. **Clone the repository**
@@ -16,9 +18,11 @@ This repository contains scripts for training & evaluating language models on a 
    ```
 
 3. **Set up your OpenAI API Key**
-   Add your OpenAI API key inside `run_eval.py`:
-   ```python
-   openai.api_key = "YOUR_OPENAI_API_KEY"
+   Export your key as an environment variable (used across scripts):
+   ```bash
+   export OPENAI_API_KEY="sk-..."
+   # Optional: override OpenAI-compatible base URL for remote endpoints
+   export OPENAI_API_BASE="http://host:port/v1"
    ```
 
 ---
@@ -50,6 +54,8 @@ python evaluate_model.py --model meta-llama/Llama-3.1-8B-Instruct --system_promp
 Run `run_eval.py` to assess model performance using **cosine similarity** and **GPT-4o scoring**.
 ```bash
 python run_eval.py --answer model_answers.csv --eval_model gpt-4o
+# You can skip the LLM judge if no API key is present
+python run_eval.py --answer model_answers.csv --skip_llm_judge
 ```
 🔹 **Arguments**  
 - `--answer` → CSV file containing model-generated answers  

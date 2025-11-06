@@ -7,8 +7,11 @@ import datetime
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
+import os
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
 
 local_embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 openai_failed = False
@@ -63,8 +66,8 @@ You must **only return a valid JSON object** with this structure:
     except (json.JSONDecodeError, AttributeError) as e:
         return 1, f"Critical Error: {str(e)}. Raw response: {llm_response[:200]}"
 
-def evaluate_model(answer_file, eval_model="gpt-4o"):
-    qa_data = pd.read_csv("data/qa.csv")
+def evaluate_model(answer_file, eval_model="gpt-4o", skip_llm_judge=False, qa_path="data/qa.csv"):
+    qa_data = pd.read_csv(qa_path)
     model_answers = pd.read_csv(answer_file)
     if len(qa_data) != len(model_answers):
         raise ValueError("Mismatch in number of questions and model answers!")
@@ -83,8 +86,11 @@ def evaluate_model(answer_file, eval_model="gpt-4o"):
         embedding_model_used = emb_model
         sim_score = cosine_similarity([truth_emb], [model_emb])[0][0]
         cosine_sims.append(sim_score)
-        llm_score, explanation = get_llm_judge_score(question, ground_truth, model_answer, eval_model)
-        llm_scores.append(llm_score)
+        if not skip_llm_judge and OPENAI_API_KEY:
+            llm_score, explanation = get_llm_judge_score(question, ground_truth, model_answer, eval_model)
+            llm_scores.append(llm_score)
+        else:
+            llm_score, explanation = np.nan, "LLM judge skipped (no key or --skip_llm_judge)."
         results.append({
             "timestamp": timestamp,
             "model_name": model_name,
@@ -97,7 +103,7 @@ def evaluate_model(answer_file, eval_model="gpt-4o"):
             "llm_explanation": explanation
         })
     avg_cosine = np.mean(cosine_sims)
-    avg_llm_score = np.mean(llm_scores)
+    avg_llm_score = float(np.nanmean(llm_scores)) if len(llm_scores) else float("nan")
     results_df = pd.DataFrame(results)
     avg_row = pd.DataFrame([{
         "timestamp": timestamp,
@@ -125,5 +131,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--answer", required=True, help="Path to the CSV file with model answers")
     parser.add_argument("--eval_model", default="gpt-4o", help="OpenAI model for evaluation")
+    parser.add_argument("--skip_llm_judge", action="store_true", help="Skip LLM judge scoring")
+    parser.add_argument("--qa_path", default="data/qa.csv", help="Path to ground-truth QA CSV")
     args = parser.parse_args()
-    evaluate_model(args.answer, args.eval_model)
+    evaluate_model(args.answer, args.eval_model, skip_llm_judge=args.skip_llm_judge, qa_path=args.qa_path)

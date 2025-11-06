@@ -8,8 +8,14 @@ from sklearn.metrics.pairwise import cosine_similarity
 from openai import OpenAI
 from tqdm import tqdm
 
-client = OpenAI(api_key="EMPTY", base_url="http://185.248.53.82:35711/v1") # change to the url where the model you want is hosted
-client_embeddings = OpenAI(api_key="YOUR_OPENAI_API_KEY")
+def build_chat_client(api_key: str | None, api_base: str | None) -> OpenAI:
+    key = api_key or os.getenv("OPENAI_API_KEY", "")
+    base = api_base or os.getenv("OPENAI_API_BASE", "http://185.248.53.82:35711/v1")
+    return OpenAI(api_key=key, base_url=base)
+
+def build_embeddings_client(api_key: str | None) -> OpenAI:
+    key = api_key or os.getenv("OPENAI_API_KEY", "")
+    return OpenAI(api_key=key)
 
 def safe_json_loads(x):
     if isinstance(x, str):
@@ -28,7 +34,7 @@ def load_retrieval_data(retrieval_file):
     df["openai_embedding"] = df["openai_embedding"].apply(safe_json_loads)
     return df
 
-def get_embedding(text, openai_model="text-embedding-3-large"):
+def get_embedding(text, client_embeddings: OpenAI, openai_model="text-embedding-3-large"):
     response = client_embeddings.embeddings.create(input=text, model=openai_model)
     embedding = np.array(response.data[0].embedding)
     return embedding
@@ -52,14 +58,14 @@ def retrieve_context(query_embedding, retrieval_df, top_k=5):
     retrieved["similarity"] = sims[top_indices]
     return retrieved
 
-def generate_answers(model_id, qa_data, system_prompt, hyperparams, retrieval_df, top_k=5):
+def generate_answers(model_id, qa_data, system_prompt, hyperparams, retrieval_df, client: OpenAI, client_embeddings: OpenAI, top_k=5):
     generated_answers = []
     max_tokens = hyperparams.get("max_new_tokens", 1024)
     temperature = hyperparams.get("temperature", 0.7)
     top_p = hyperparams.get("top_p", 1.0)
     for idx, row in tqdm(qa_data.iterrows(), total=len(qa_data), desc="Generating Answers"):
         question = row["question"]
-        query_embedding = get_embedding(question)
+        query_embedding = get_embedding(question, client_embeddings)
         retrieved = retrieve_context(query_embedding, retrieval_df, top_k=top_k)
         retrieval_text = "\nRetrieved information:\n"
         for i, r in retrieved.iterrows():
@@ -91,12 +97,14 @@ def save_answers(output_file, answers, system_prompt_path):
     df.to_csv(output_file, index=False)
     print(f"\n✅ Model answers saved to: {output_file}")
 
-def main(model_id, system_prompt_path, top_k):
+def main(model_id, system_prompt_path, top_k, api_key: str | None, api_base: str | None, embeddings_api_key: str | None):
     system_prompt, hyperparams = load_config(system_prompt_path)
     hyperparams["max_new_tokens"] = 1024
     qa_data = pd.read_csv("data/qa.csv")
     retrieval_df = load_retrieval_data("/data/nextgen/qa_pairs_with_embeddings.csv")
-    answers = generate_answers(model_id, qa_data, system_prompt, hyperparams, retrieval_df, top_k=top_k)
+    client = build_chat_client(api_key, api_base)
+    client_embeddings = build_embeddings_client(embeddings_api_key)
+    answers = generate_answers(model_id, qa_data, system_prompt, hyperparams, retrieval_df, client, client_embeddings, top_k=top_k)
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     prompt_name = os.path.basename(system_prompt_path).replace(".txt", "")
     model_name = model_id.split("/")[-1].replace(".", "-")
@@ -108,5 +116,8 @@ if __name__ == "__main__":
     parser.add_argument("--model", required=True, help="OpenAI model ID to use for answer generation")
     parser.add_argument("--system_prompt", required=True, help="Path to the system prompt file (e.g., config/system_prompt.txt)")
     parser.add_argument("--top_k", type=int, default=5, help="Number of retrieval documents to use (default: 5)")
+    parser.add_argument("--api_key", default=None, help="OpenAI-compatible API key for chat (default from OPENAI_API_KEY)")
+    parser.add_argument("--api_base", default=None, help="OpenAI-compatible base URL for chat (default from OPENAI_API_BASE)")
+    parser.add_argument("--embeddings_api_key", default=None, help="OpenAI API key for embeddings (default from OPENAI_API_KEY)")
     args = parser.parse_args()
-    main(args.model, args.system_prompt, args.top_k)
+    main(args.model, args.system_prompt, args.top_k, args.api_key, args.api_base, args.embeddings_api_key)

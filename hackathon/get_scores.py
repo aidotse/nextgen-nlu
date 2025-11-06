@@ -6,8 +6,10 @@ import json
 import datetime
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+import os
 
-client = openai.OpenAI(api_key="....zYA")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=OPENAI_API_KEY)  # reads from env; ensure OPENAI_API_KEY is set
 
 
 def get_embedding(text, openai_model="text-embedding-3-large"):

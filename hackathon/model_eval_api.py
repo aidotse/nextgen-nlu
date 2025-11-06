@@ -5,12 +5,11 @@ import os
 import datetime
 from openai import OpenAI
 
-# Initialize the OpenAI client with your settings.
-openai_api_key = "EMPTY"
-openai_api_base = "http://185.248.53.82:35711/v1"
-# openai_api_base = http://185.248.53.82:43773 finetuned model
-
-client = OpenAI(api_key=openai_api_key, base_url=openai_api_base)
+# Initialize the OpenAI client from env/CLI settings.
+def build_client(api_key: str | None, api_base: str | None) -> OpenAI:
+    key = api_key or os.getenv("OPENAI_API_KEY", "")
+    base = api_base or os.getenv("OPENAI_API_BASE", "http://185.248.53.82:35711/v1")
+    return OpenAI(api_key=key, base_url=base)
 
 def load_config(system_prompt_path):
     with open(system_prompt_path, "r", encoding="utf-8") as f:
@@ -19,7 +18,7 @@ def load_config(system_prompt_path):
         hyperparams = json.load(f)
     return system_prompt, hyperparams
 
-def generate_answers(model_id, qa_data, system_prompt, hyperparams):
+def generate_answers(model_id, qa_data, system_prompt, hyperparams, client: OpenAI):
     generated_answers = []
     # Map hyperparams keys: converting "max_new_tokens" to "max_tokens" for OpenAI API.
     max_tokens = hyperparams.get("max_new_tokens", 1024)
@@ -56,12 +55,13 @@ def save_answers(output_file, answers, system_prompt_path):
     df.to_csv(output_file, index=False)
     print(f"\n✅ Model answers saved to: {output_file}")
 
-def main(model_id, system_prompt_path):
+def main(model_id, system_prompt_path, api_key: str | None, api_base: str | None):
     system_prompt, hyperparams = load_config(system_prompt_path)
     # Ensure max_new_tokens is updated (will be mapped to max_tokens for OpenAI)
     hyperparams["max_new_tokens"] = 1024
     qa_data = pd.read_csv("data/qa.csv")
-    answers = generate_answers(model_id, qa_data, system_prompt, hyperparams)
+    client = build_client(api_key, api_base)
+    answers = generate_answers(model_id, qa_data, system_prompt, hyperparams, client)
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     prompt_name = os.path.basename(system_prompt_path).replace(".txt", "")
@@ -74,5 +74,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, help="OpenAI model ID to use for evaluation")
     parser.add_argument("--system_prompt", required=True, help="Path to system prompt file")
+    parser.add_argument("--api_key", default=None, help="OpenAI-compatible API key (default from OPENAI_API_KEY)")
+    parser.add_argument("--api_base", default=None, help="OpenAI-compatible base URL (default from OPENAI_API_BASE)")
     args = parser.parse_args()
-    main(args.model, args.system_prompt)
+    main(args.model, args.system_prompt, args.api_key, args.api_base)

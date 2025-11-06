@@ -10,16 +10,37 @@ See `data/qa.csv`.
 2) `llama-finetuned-raw` running @ `185.248.53.82:36539` (this is a lora trained model on raw pdfs)
 3) `llama-finetuned-raw-qa` running @ `185.248.53.82:43773` (another lora trained model on raw pdfs + synthethic instruct QA data)
    
-Please change the `openai_api_base` url to the endpoint where the model is running in `model_eval_api.py`
+Set your API host without changing code. Either:
+
+Env vars (recommended):
+```bash
+export OPENAI_API_BASE="http://YOUR_HOST:PORT/v1"
+export OPENAI_API_KEY="sk-..."
+```
+
+Or per-run flags:
+```bash
+--api_base http://YOUR_HOST:PORT/v1 --api_key sk-...
+```
 
 ## Possible Approaches
 * Use models as they are and compare results (tweak prompt, hyperparams) example: 
 ```bash
-python model_eval_api.py --model meta-llama/Meta-Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt
+python model_eval_api.py \
+  --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+  --system_prompt config/system_prompt.txt \
+  --api_base http://YOUR_HOST:PORT/v1 \
+  --api_key sk-...
 ```
 * Use models + RAG (tweak prompt, hyperparams, retrival) example:
 ```bash 
-python model_eval_api_rag.py --model meta-llama/Meta-Llama-3.1-8B-Instruct --system_prompt config/system_prompt.txt --top_k 5
+python model_eval_api_rag.py \
+  --model meta-llama/Meta-Llama-3.1-8B-Instruct \
+  --system_prompt config/system_prompt.txt \
+  --top_k 5 \
+  --api_base http://YOUR_HOST:PORT/v1 \
+  --api_key sk-... \
+  --embeddings_api_key sk-...  # optional if different from OPENAI_API_KEY
 ```
 The RAG approach has all the embeddings precomputed from openai stored at edgelab @ `/mnt/data/rag_data/med_qa_embeddings.csv` where the embedding is computed for the `question` field.
 ```bash
@@ -53,8 +74,8 @@ Detailed results saved to evaluation_results_my_model_answers_2025-03-18_14-30-0
 ```
 pip install -r requirements.txt
 ```
-To run the `get_scores.py` with LLM as a judge. You need the openAI key.
-```python
-openai.api_key = "YOUR_OPENAI_API_KEY"
+To run `get_scores.py` with LLM as a judge, set the key:
+```bash
+export OPENAI_API_KEY="sk-..."
 ```
 Ask Tim or Mauricio.
